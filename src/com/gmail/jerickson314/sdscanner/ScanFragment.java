@@ -229,7 +229,7 @@ public class ScanFragment extends Fragment {
             }
         }
 
-        protected void dbOneTry() {
+        protected void dbOneTry(File topFolder) {
             Cursor cursor = getActivity().getContentResolver().query(
                     MediaStore.Files.getContentUri("external"),
                     MEDIA_PROJECTION,
@@ -250,7 +250,9 @@ public class ScanFragment extends Fragment {
                 currentItem++;
                 try {
                     File file = new File(cursor.getString(data_column)).getCanonicalFile();
-                    if (!file.exists() ||
+                    String filePath = file.getCanonicalPath();
+                    if (!filePath.startsWith(topFolder.getCanonicalPath())) continue;
+                    else if (!file.exists() ||
                              file.lastModified() / 1000L >
                              cursor.getLong(modified_column)) {
                         // Media scanner handles these cases.
@@ -298,7 +300,7 @@ public class ScanFragment extends Fragment {
             while (!dbSuccess && numRetries < DB_RETRIES) {
                 dbSuccess = true;
                 try {
-                    dbOneTry();
+                    dbOneTry(files[0].getCanonicalFile());
                 }
                 catch (Exception Ex) {
                     // For any of these errors, try again.
